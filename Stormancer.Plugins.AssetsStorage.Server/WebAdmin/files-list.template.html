@@ -1,0 +1,95 @@
+﻿<!-- Modal box -->
+<!-- Modal information -->
+<script type="text/ng-template" id="ModalInformation.html">
+    <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">{{$InformationPopup.title}}</h3>
+    </div>
+    <div class="modal-body" id="modal-body">
+        <p>{{$InformationPopup.Message}}</p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" type="button" ng-click="$InformationPopup.ok()">Ok</button>
+    </div>
+</script>
+<!-- Branch creation -->
+<script type="text/ng-template" id="ModalCreateBranch.html">
+    <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Branch creation</h3>
+    </div>
+    <div class="modal-body" id="modal-body">
+        <label>Name</label><br />
+        <input class="form-control" type="text" name="Nom" required ng-model="$CreateBranchPopup.branchName" ng-change="$CreateBranchPopup.checkAccent()">
+        <label>ParentBranch</label><br />
+        <select name="repeatSelect" id="repeatSelect" ng-model="$CreateBranchPopup.selectBranch.model">
+            <option ng-repeat="option in $CreateBranchPopup.selectBranch.availableOptions" value="{{option.Name}}">{{option.Path}}</option>
+        </select>
+        <div uib-alert ng-repeat="alert in $CreateBranchPopup.alerts" ng-class="'alert-' + (alert.type || 'warning')">{{alert.message}}</div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" type="button" ng-click="$CreateBranchPopup.ok()" ng-disabled="$CreateBranchPopup.pending">Create</button>
+        <button class="btn btn-primary" type="button" ng-click="$CreateBranchPopup.cancel()" ng-disabled="$CreateBranchPopup.pending">Cancel</button>
+    </div>
+</script>
+<!-- File creation -->
+<script type="text/ng-template" id="ModalCreateFile.html">
+    <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">File creation</h3>
+    </div>
+    <div class="modal-body" id="modal-body">
+        <label>Path : </label>
+        <label><input class="form-control" type="text" name="Nom" required ng-model="$CreateFilePopup.pathName" ng-blur="$CreateFilePopup.checkPath()"></label>
+        <label><input type="file" file-model="$CreateFilePopup.fileToUpload" /></label>
+        <div uib-alert ng-repeat="alert in $CreateFilePopup.alerts" ng-class="'alert-' + (alert.type || 'warning')">{{alert.message}}</div>
+        <uib-progressbar animate="false" max="$CreateFilePopup.progressMax" value="$CreateFilePopup.progressValue" ng-hide="$CreateFilePopup.hideProgressBar"><span style="color:white;">{{$CreateFilePopup.displayValue}}</span></uib-progressbar>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" type="button" ng-click="$CreateFilePopup.ok()" ng-disabled="$CreateFilePopup.pending">Create</button>
+        <button class="btn btn-primary" type="button" ng-click="$CreateFilePopup.cancel()" ng-disabled="$CreateFilePopup.pending">Cancel</button>
+    </div>
+</script>
+<!-- Confirmation popup -->
+<script type="text/ng-template" id="ConfirmationPopup.html">
+    <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">{{$ConfirmationPopup.title}}</h3>
+    </div>
+    <div class="modal-body" id="modal-body">
+        <p>{{$ConfirmationPopup.message}}</p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" type="button" ng-click="$ConfirmationPopup.ok()">Ok</button>
+        <button class="btn btn-primary" type="button" ng-click="$ConfirmationPopup.cancel()">Cancel</button>
+    </div>
+</script>
+<!---->
+
+<div uib-alert ng-repeat="alert in $ctrl.alerts" ng-class="'alert-' + (alert.type || 'warning')">{{alert.message}}</div>
+<form novalidate class="simple-form">
+    <input class="btn btn-primary" type="submit" ng-click="$ctrl.showBranchPopUp()" ng-disabled="$ctrl.pending" value="Create branch" />
+    <input class="btn btn-primary" type="submit" ng-click="$ctrl.showFilePopup()" ng-disabled="$ctrl.pending" value="Create File" />
+    <input class="btn btn-primary" type="submit" ng-click="$ctrl.showRemoveBranchPopup()" ng-disabled="$ctrl.pending" value="Delete branch" />
+</form>
+<table class="table table-striped">
+    <label for="repeatSelect"> Selected Branch : </label>
+    <select name="repeatSelect" id="repeatSelect" ng-model="$ctrl.selectBranch.model" ng-Change="$ctrl.getBranch()">
+        <option ng-repeat="option in $ctrl.selectBranch.availableOptions" value="{{option.Name}}">{{option.Path}}</option>
+    </select>
+    <uib-progressbar animate="false" max="$ctrl.progressMax" value="$ctrl.progressValue" ng-hide="$ctrl.hideProgressBar"><span style="color:white;">{{$ctrl.displayValue}}</span></uib-progressbar>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Path</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        <a id="dlLink"></a>
+        <tr ng-repeat="file in $ctrl.files">
+            <td>{{file.FileName}}</td>
+            <td>{{file.Path}}</td>
+            <td>
+                <button class="btn btn-default" type="button" ng-click="$ctrl.downloadFile(file.URL, file.FileName)" ng-disabled="$ctrl.pending">Download</button>
+                <button class="btn btn-default" type="button" ng-click="$ctrl.showRemoveFilePopup(file.Path,file.FileName)" ng-disabled="$ctrl.pending">Remove</button>
+            </td>
+        </tr>
+    </tbody>
+</table>

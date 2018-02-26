@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
+    <script type="text/javascript" src="ui-bootstrap-tpls-2.5.0.js"></script>
+    <script type="text/javascript" src="remove-diacritics.js"></script>
+    <script>
+        {
+            // STORMANCER PLUGIN SCRIPT STARTUP
+            let urlParams;
+            (window.onpopstate = function () {
+                let match,
+                    search = /([^&=]+)=?([^&]*)/g,
+                    query = window.location.search.substring(1);
+                urlParams = {};
+                while (match = search.exec(query)) {
+                    urlParams[decodeURIComponent(match[1])] = decodeURIComponent(match[2]);
+                }
+            })();
+            let xToken = urlParams["x-token"];
+            xToken = encodeURIComponent(xToken);
+            let sceneName = urlParams["sceneName"] || "main";
+            //Set token as cookie to allow admin assets plugin
+            document.cookie = "x-token=" + xToken;
+            let splitted = window.location.href.split('/');
+            window.appInfos = {
+                'accountId': splitted[3],
+                'application': splitted[4],
+                'adminPlugin': splitted[7],
+                'token': xToken
+            };
+        }
+
+        let e = document.createElement("script");
+        e.src = "files-list.component.js";
+        document.head.appendChild(e);
+        
+    </script>
+
+</head>
+<body>
+    <assets></assets>
+</body>
+</html>
