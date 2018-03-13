@@ -12,5 +12,7 @@ namespace Stormancer.Server.AssetsStorage
         public string Path { get; set; }
         [MessagePackMember(3)]
         public string MD5Hash { get; set; }
+        [MessagePackMember(4)]
+        public string ContentMD5Hash { get; set; }
     }
 }

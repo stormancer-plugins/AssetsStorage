@@ -168,6 +168,7 @@ namespace Stormancer.Server.AssetsStorage
                         URL = fileUrl.AbsoluteUri,
                         Path = mfh.Record.Path,
                         MD5Hash = mfh.Record.MD5Hash,
+                        ContentMD5Hash = mfh.Record.ContentMD5Hash
                     });
                 }                
             }
@@ -239,6 +240,10 @@ namespace Stormancer.Server.AssetsStorage
             await data.Content.CopyToAsync(content);
             content.Seek(0, SeekOrigin.Begin);
 
+            MD5 md5Hash = MD5.Create();
+            file.ContentMD5Hash = GetMD5Hash(md5Hash, content);
+            content.Seek(0, SeekOrigin.Begin);
+
             var type = data.Content.Headers.ContentType.ToString();
 
             await _fileStorage.UploadFile(branchName + "/" + file.Id, content, type);
@@ -256,8 +261,7 @@ namespace Stormancer.Server.AssetsStorage
             streamList.Add(metafileStream);
             streamList.Add(content);
             ConcatenatedStream streams = new ConcatenatedStream(streamList);
-
-            MD5 md5Hash = MD5.Create();
+          
             var hash = GetMD5Hash(md5Hash, streams);
 
             file.MD5Hash = hash;
@@ -302,7 +306,7 @@ namespace Stormancer.Server.AssetsStorage
         {
             var file = await _dataBaseWrapper.GetFile(branchname, path);
             var fileUrl = await _fileStorage.GetDownloadUrl(file.BranchId + "/" + file.Id);
-            var fildeDto = new MetafileDto { FileName = file.Id, Path = file.Path, URL = fileUrl.AbsoluteUri, MD5Hash = file.MD5Hash };
+            var fildeDto = new MetafileDto { FileName = file.Id, Path = file.Path, URL = fileUrl.AbsoluteUri, MD5Hash = file.MD5Hash, ContentMD5Hash = file.ContentMD5Hash };
             return fildeDto;
         }
         #endregion
