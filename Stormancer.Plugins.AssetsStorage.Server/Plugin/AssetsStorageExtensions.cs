@@ -1,5 +1,4 @@
-﻿using Server.Plugins.AssetsStorage;
-using Stormancer.Core;
+﻿using Stormancer.Core;
 
 namespace Stormancer.Server.AssetsStorage
 {

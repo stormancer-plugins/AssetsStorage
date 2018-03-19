@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
-using Server.Plugins.AssetsStorage;
+using Stormancer.Server.AssetsStorage;
 using Server.Plugins.FileStorage;
 using Stormancer.Diagnostics;
 using System;
@@ -97,7 +97,7 @@ namespace Stormancer.Server.AssetsStorage
             {
                 await _assetsStorage.CreateBranch(branch);
             }
-            catch (Exceptions.BranchException ex)
+            catch (BranchException ex)
             {
                 var resp = new HttpResponseMessage(System.Net.HttpStatusCode.Conflict)
                 {
@@ -106,7 +106,7 @@ namespace Stormancer.Server.AssetsStorage
                 };
                 throw new HttpResponseException(resp);
             }
-            catch(Exceptions.ElasticsearchException)
+            catch(ElasticsearchException)
             {
                 var resp = new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError)
                 {
@@ -130,7 +130,7 @@ namespace Stormancer.Server.AssetsStorage
             {
                 await _assetsStorage.DeleteBranch(branchName);
             }
-            catch (Exceptions.BranchException ex)
+            catch (BranchException ex)
             {
                 var resp = new HttpResponseMessage(System.Net.HttpStatusCode.Conflict)
                 {
@@ -139,7 +139,7 @@ namespace Stormancer.Server.AssetsStorage
                 };
                 throw new HttpResponseException(resp);
             }
-            catch (Exceptions.ElasticsearchException)
+            catch (ElasticsearchException)
             {
                 var resp = new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError)
                 {
@@ -168,6 +168,7 @@ namespace Stormancer.Server.AssetsStorage
             var file = new Metafile
             {
                 Id = id,
+                CreatedOn = DateTime.UtcNow,
                 Filename = fileName,                                
                 Path = path  == "" ? "" : path,
                 BranchId = branchName,
@@ -181,7 +182,7 @@ namespace Stormancer.Server.AssetsStorage
             {
                 await _assetsStorage.CreateFile(file);
             }
-            catch (Exceptions.BranchException)
+            catch (BranchException)
             {
                 var resp = new HttpResponseMessage(System.Net.HttpStatusCode.Conflict)
                 {
@@ -190,7 +191,7 @@ namespace Stormancer.Server.AssetsStorage
                 };
                 throw new HttpResponseException(resp);
             }
-            catch (Exceptions.FileException)
+            catch (FileException)
             {
                 var resp = new HttpResponseMessage(System.Net.HttpStatusCode.Conflict)
                 {
@@ -199,7 +200,7 @@ namespace Stormancer.Server.AssetsStorage
                 };
                 throw new HttpResponseException(resp);
             }
-            catch (Exceptions.ElasticsearchException)
+            catch (ElasticsearchException)
             {
                 var resp = new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError)
                 {
@@ -224,7 +225,7 @@ namespace Stormancer.Server.AssetsStorage
             {
                 await _assetsStorage.DeleteFile(branchName, path);
             }
-            catch (Exceptions.BranchException ex)
+            catch (BranchException ex)
             {
                 var resp = new HttpResponseMessage(System.Net.HttpStatusCode.NotFound)
                 {
@@ -233,7 +234,7 @@ namespace Stormancer.Server.AssetsStorage
                 };
                 throw new HttpResponseException(resp);
             }
-            catch (Exceptions.FileException ex)
+            catch (FileException ex)
             {
                 var resp = new HttpResponseMessage(System.Net.HttpStatusCode.NotFound)
                 {
@@ -242,7 +243,7 @@ namespace Stormancer.Server.AssetsStorage
                 };
                 throw new HttpResponseException(resp);
             }
-            catch (Exceptions.ElasticsearchException)
+            catch (ElasticsearchException)
             {
                 var resp = new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError)
                 {

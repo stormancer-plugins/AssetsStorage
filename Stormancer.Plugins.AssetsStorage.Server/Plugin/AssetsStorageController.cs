@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Stormancer;
 using Stormancer.Plugins;
 using Stormancer.Diagnostics;
-using Server.Plugins.AssetsStorage.Exceptions;
 
 namespace Stormancer.Server.AssetsStorage
 {

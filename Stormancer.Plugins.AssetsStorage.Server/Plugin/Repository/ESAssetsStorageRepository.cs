@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using Stormancer.Diagnostics;
 using Server.Database;
 using Server.Plugins.Configuration;
-using Server.Plugins.AssetsStorage.Exceptions;
 
 namespace Stormancer.Server.AssetsStorage
 {
@@ -309,12 +308,7 @@ namespace Stormancer.Server.AssetsStorage
                 throw new BranchException($"BranchNotFound: {metafile.BranchId}");
             }
 
-            // Todo asset je check avec l'id si il existe un recorde head.
-            // Si oui alors je change le guid du head avec le nouveau
-            // Si non alors je créer le nouveau head.
-            // Check if the file allready exist
             // Update head 
-
             var headFile = branchToUpdate.MetafilesHead.FirstOrDefault<MetafileHead>(mf => mf.Id == metafile.BranchId + "_" + metafile.Path + "_HEAD");
             if (headFile != null)
             {
