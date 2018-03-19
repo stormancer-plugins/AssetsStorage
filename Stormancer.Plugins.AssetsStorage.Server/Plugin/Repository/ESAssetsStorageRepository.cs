@@ -6,13 +6,14 @@ using System.Collections.Concurrent;
 using Stormancer.Diagnostics;
 using Server.Database;
 using Server.Plugins.Configuration;
+using System.Threading;
 
 namespace Stormancer.Server.AssetsStorage
 {
     class ESAssetsStorageRepository : IAssetsStorageRepository
     {
-        private string _logCategory = "AssetStorageCacheDataBase";
-        private const string _databaseName = "assetsstorage";
+        private const string LOG_CATEGORY = "AssetStorageCacheDataBase";
+        private const string DATABASE_NAME = "assetsstorage";
         private readonly ILogger _logger;
         private readonly IConfiguration _configuration;
         private IESClientFactory _elasticClient;
@@ -39,7 +40,7 @@ namespace Stormancer.Server.AssetsStorage
         /// <returns></returns>
         private async Task<Nest.IElasticClient> CreateClient<T>(string assetType = "")
         {
-            var result = await _elasticClient.CreateClient<T>(_databaseName, assetType);
+            var result = await _elasticClient.CreateClient<T>(DATABASE_NAME, assetType);
             return result;
         }
 
@@ -104,7 +105,7 @@ namespace Stormancer.Server.AssetsStorage
 
             if (!branchCreation.IsValid)
             {
-                _logger.Log(LogLevel.Error, _logCategory, "An error occurred when trying to index file.", new { Error = branchCreation.OriginalException });
+                _logger.Log(LogLevel.Error, LOG_CATEGORY, "An error occurred when trying to index file.", new { Error = branchCreation.OriginalException });
                 throw new ElasticsearchException($"An error occured during creation process in Elasticsearh. Original message: {branchCreation.ServerError.Error.Reason}");
             }
             else
@@ -126,7 +127,7 @@ namespace Stormancer.Server.AssetsStorage
 
             if (!metafileCreation.IsValid)
             {
-                _logger.Log(LogLevel.Error, _logCategory, "An error occurred when trying to index file.", new { Error = metafileCreation.OriginalException });
+                _logger.Log(LogLevel.Error, LOG_CATEGORY, "An error occurred when trying to index file.", new { Error = metafileCreation.OriginalException });
                 throw new ElasticsearchException($"An error occured during creation process in Elasticsearh. Original message: {metafileCreation.ServerError.Error.Reason}");
             }
         }
@@ -143,7 +144,7 @@ namespace Stormancer.Server.AssetsStorage
             var selectBranch = await this.GetBranch(branchname);
             if (selectBranch == null)
             {
-                _logger.Log(LogLevel.Warn, _logCategory, $"BranchNotFound : {branchname} ", new { Environment.StackTrace });
+                _logger.Log(LogLevel.Warn, LOG_CATEGORY, $"BranchNotFound : {branchname} ", new { Environment.StackTrace });
                 throw new BranchException($"BranchNotFound : {branchname}");
             }
 
@@ -152,7 +153,7 @@ namespace Stormancer.Server.AssetsStorage
             var file = selectBranch.MetafilesHead.FirstOrDefault(mf => (mf.Id == branchname + "_" + filePath + "_HEAD") && (mf.IsActive == isActiveFile));
             if (file != null)
             {
-                _logger.Log(LogLevel.Warn, _logCategory, $"Branch file found in branch {selectBranch.Id}", "");
+                _logger.Log(LogLevel.Warn, LOG_CATEGORY, $"Branch file found in branch {selectBranch.Id}", "");
                 return file.Record;
             }
             else
@@ -166,6 +167,22 @@ namespace Stormancer.Server.AssetsStorage
                 {
                     return null;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Flush assets storage cache.
+        /// </summary>
+        /// <returns></returns>
+        public async Task Flush()
+        {
+            try
+            {
+                _branches.Clear();
+            }
+            catch (Exception e)
+            {
+                _logger.Log(LogLevel.Error, "matchmaker", "An error occurred while running a matchmaking.", e);
             }
         }
         #endregion
@@ -182,7 +199,7 @@ namespace Stormancer.Server.AssetsStorage
 
             if (!result.IsValid)
             {
-                _logger.Log(LogLevel.Warn, _logCategory, $"An error occurred when trying to get branches", new { result.DebugInformation });
+                _logger.Log(LogLevel.Warn, LOG_CATEGORY, $"An error occurred when trying to get branches", new { result.DebugInformation });
                 return null;
             }
 
@@ -194,7 +211,7 @@ namespace Stormancer.Server.AssetsStorage
                 result = await esClient.ScrollAsync<Branch>("1s", result.ScrollId);
                 if (!result.IsValid)
                 {
-                    _logger.Log(LogLevel.Warn, _logCategory, $"An error occurred when trying to get branches", new { result.DebugInformation });
+                    _logger.Log(LogLevel.Warn, LOG_CATEGORY, $"An error occurred when trying to get branches", new { result.DebugInformation });
                     return null;
                 }
                 list.AddRange(result.Documents);
@@ -224,7 +241,7 @@ namespace Stormancer.Server.AssetsStorage
 
             if (branchResult == null)
             {
-                _logger.Log(LogLevel.Warn, _logCategory, $"Selected branch not found in elastic search. branch={branchName}", new { Environment.StackTrace });
+                _logger.Log(LogLevel.Warn, LOG_CATEGORY, $"Selected branch not found in elastic search. branch={branchName}", new { Environment.StackTrace });
                 Task<Branch> removedTask;
                 _branches.TryRemove(branchName, out removedTask);
             }
@@ -284,7 +301,7 @@ namespace Stormancer.Server.AssetsStorage
             var deleteResult = await esClient.DeleteAsync<Branch>(branch);
             if (!deleteResult.IsValid)
             {
-                _logger.Log(LogLevel.Warn, _logCategory, "Delete branch ", deleteResult.DebugInformation);
+                _logger.Log(LogLevel.Warn, LOG_CATEGORY, "Delete branch ", deleteResult.DebugInformation);
                 throw new ElasticsearchException($"An error occured during deletion process in Elasticsearh. Original message: {deleteResult.ServerError.Error.Reason}");
             }
 
@@ -304,7 +321,7 @@ namespace Stormancer.Server.AssetsStorage
             var branchToUpdate = await this.GetBranch(metafile.BranchId);
             if (branchToUpdate == null)
             {
-                _logger.Log(LogLevel.Warn, _logCategory, $"BranchNotFound : {metafile.BranchId} ", new { Environment.StackTrace });
+                _logger.Log(LogLevel.Warn, LOG_CATEGORY, $"BranchNotFound : {metafile.BranchId} ", new { Environment.StackTrace });
                 throw new BranchException($"BranchNotFound: {metafile.BranchId}");
             }
 
@@ -312,14 +329,14 @@ namespace Stormancer.Server.AssetsStorage
             var headFile = branchToUpdate.MetafilesHead.FirstOrDefault<MetafileHead>(mf => mf.Id == metafile.BranchId + "_" + metafile.Path + "_HEAD");
             if (headFile != null)
             {
-                _logger.Log(LogLevel.Warn, _logCategory, $"File {metafile.Path} already exist on server ", new { });
+                _logger.Log(LogLevel.Warn, LOG_CATEGORY, $"File {metafile.Path} already exist on server ", new { });
                 headFile.Record = metafile;
                 headFile.HeadFile = metafile.Id;
                 headFile.IsActive = true;            
             }
             else
             {
-                _logger.Log(LogLevel.Warn, _logCategory, $"File {metafile.Path} add on server ", new { });
+                _logger.Log(LogLevel.Warn, LOG_CATEGORY, $"File {metafile.Path} add on server ", new { });
                 //Add new head in branch and index file index flatten.
                 var metaFileHead = new MetafileHead();
                 metaFileHead.Id = metafile.BranchId + "_" + metafile.Path + "_HEAD";
@@ -352,7 +369,7 @@ namespace Stormancer.Server.AssetsStorage
 
             if (branch == null)
             {
-                _logger.Log(LogLevel.Warn, _logCategory, $"BranchNotFound : {branchName} ", new { Environment.StackTrace });
+                _logger.Log(LogLevel.Warn, LOG_CATEGORY, $"BranchNotFound : {branchName} ", new { Environment.StackTrace });
                 throw new BranchException($"BranchNotFound : {branchName}");
             }
 
@@ -360,7 +377,7 @@ namespace Stormancer.Server.AssetsStorage
             MetafileHead fileToDelete = branch.MetafilesHead.FirstOrDefault(mf => mf.Id == branchName + "_" + path + "_HEAD");
             if (fileToDelete == null)
             {
-                _logger.Log(LogLevel.Error, _logCategory, $"Specified file not found on Elasticsearch", new { path });
+                _logger.Log(LogLevel.Error, LOG_CATEGORY, $"Specified file not found on Elasticsearch", new { path });
                 throw new FileException($"Specified file not found on Elasticsearch. Original file : { path }");
             }
 
@@ -398,7 +415,7 @@ namespace Stormancer.Server.AssetsStorage
             var file = await this.SearchFile(branchname, path);
             if (file == null)
             {
-                _logger.Log(LogLevel.Warn, _logCategory, $"File {path} doesn't exist on server ", new { Environment.StackTrace });
+                _logger.Log(LogLevel.Warn, LOG_CATEGORY, $"File {path} doesn't exist on server ", new { Environment.StackTrace });
                 throw new FileException($"File {path} doesn't exist on server");
             }
             return file;

@@ -5,6 +5,7 @@ namespace Stormancer.Server.AssetsStorage
 {
     interface IAssetsStorageRepository
     {
+        Task Flush();
         Task<List<Branch>> GetBranches();
         Task<Branch> GetBranch(string branchName);
         Task<Branch> CreateBranch(Branch branch);
