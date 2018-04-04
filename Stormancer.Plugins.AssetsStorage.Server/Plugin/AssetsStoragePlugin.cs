@@ -63,11 +63,11 @@ namespace Stormancer.Server.AssetsStorage
 
         private void OnSettingsChange(object sender, dynamic settings)
         {
-            _cacheDuration = (int?)settings.chatConfiguration?.maxCacheLogDuration ?? 60;
+            _cacheDuration = (int?)settings.assetsStorage?.maxCacheDuration ?? 60;
 
-            if (settings.chatConfiguration?.maxCacheLogDuration == null)
+            if (settings.assetsStorage?.maxCacheDuration == null)
             {
-                _host.DependencyResolver.Resolve<ILogger>().Log(LogLevel.Warn, LOG_CATEGORY, $"Failed to find settings in ChatConfiguration -> MaxCacheLogDuration ! Settings is with default value : {_cacheDuration}", new { maxCacheLogDuration = _cacheDuration });
+                _host.DependencyResolver.Resolve<ILogger>().Log(LogLevel.Warn, LOG_CATEGORY, $"Failed to find settings in assets storage -> maxCacheDuration ! Settings is with default value : {_cacheDuration}", new { maxCacheDuration = _cacheDuration });
             }
         }
 
@@ -85,14 +85,14 @@ namespace Stormancer.Server.AssetsStorage
                     }
                     catch (Exception ex)
                     {
-                        _host.DependencyResolver.Resolve<ILogger>().Log(LogLevel.Error, LOG_CATEGORY, "Failed to push chat log in database", ex);
+                        _host.DependencyResolver.Resolve<ILogger>().Log(LogLevel.Error, LOG_CATEGORY, "Failed to flush assets storage cache", ex);
                     }
                 }
                 await _assetStorageRepo.Flush();
             }
             catch (Exception ex)
             {
-                _host.DependencyResolver.Resolve<ILogger>().Log(LogLevel.Error, LOG_CATEGORY, "Failed to push chat log in database when server shutting down", ex);
+                _host.DependencyResolver.Resolve<ILogger>().Log(LogLevel.Error, LOG_CATEGORY, "Failed to flush assets storage cache when server shutting down", ex);
             }
         }
     }
