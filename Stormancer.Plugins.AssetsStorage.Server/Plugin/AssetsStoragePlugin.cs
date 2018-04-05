@@ -63,11 +63,11 @@ namespace Stormancer.Server.AssetsStorage
 
         private void OnSettingsChange(object sender, dynamic settings)
         {
-            _cacheDuration = (int?)settings.assetsStorage?.maxCacheDuration ?? 60;
+            _cacheDuration = (int?)settings.assetsStorage?.cacheDuration ?? 60;
 
-            if (settings.assetsStorage?.maxCacheDuration == null)
+            if (settings.assetsStorage?.cacheDuration == null)
             {
-                _host.DependencyResolver.Resolve<ILogger>().Log(LogLevel.Warn, LOG_CATEGORY, $"Failed to find settings in assets storage -> maxCacheDuration ! Settings is with default value : {_cacheDuration}", new { maxCacheDuration = _cacheDuration });
+                _host.DependencyResolver.Resolve<ILogger>().Log(LogLevel.Warn, LOG_CATEGORY, $"Failed to find settings in assetsStorage -> MaxCacheLogDuration ! Settings is with default value : {_cacheDuration}", new { cacheDuration = _cacheDuration });
             }
         }
 
@@ -85,14 +85,14 @@ namespace Stormancer.Server.AssetsStorage
                     }
                     catch (Exception ex)
                     {
-                        _host.DependencyResolver.Resolve<ILogger>().Log(LogLevel.Error, LOG_CATEGORY, "Failed to flush assets storage cache", ex);
+                        _host.DependencyResolver.Resolve<ILogger>().Log(LogLevel.Error, LOG_CATEGORY, "Failed to flush assetsStorage", ex);
                     }
                 }
                 await _assetStorageRepo.Flush();
             }
             catch (Exception ex)
             {
-                _host.DependencyResolver.Resolve<ILogger>().Log(LogLevel.Error, LOG_CATEGORY, "Failed to flush assets storage cache when server shutting down", ex);
+                _host.DependencyResolver.Resolve<ILogger>().Log(LogLevel.Error, LOG_CATEGORY, "Failed to flush assetsStorage when server shutting down", ex);
             }
         }
     }
